@@ -7,6 +7,7 @@ import com.pokemon.blog.exception.DuplicateResourceException;
 import com.pokemon.blog.exception.ResourceNotFoundException;
 import com.pokemon.blog.repository.UserRepository;
 import com.pokemon.blog.service.UserService;
+import com.pokemon.blog.validator.UsernameValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +52,22 @@ public class UserServiceImpl implements UserService {
     public UserResponse createUser(CreateUserRequest request) {
         logger.info("Tạo user mới với username: {}", request.getUserName());
 
+        // ✅ Business validation: username format
+        if (!UsernameValidator.isValid(request.getUserName())) {
+            logger.warn("Username {} không hợp lệ", request.getUserName());
+            throw new IllegalArgumentException(UsernameValidator.getErrorMessage());
+        }
+
+        // ✅ Business validation: username uniqueness
         if(userRepository.findByUserName(request.getUserName()).isPresent()) {
             logger.warn("Username {} đã tồn tại", request.getUserName());
             throw new DuplicateResourceException("Username đã tồn tại");
+        }
+
+        // ✅ Business validation: password strength
+        if (request.getUserPassword().length() < 6) {
+            logger.warn("Password quá yếu");
+            throw new IllegalArgumentException("Password tối thiểu 6 ký tự");
         }
 
         User user = new User();

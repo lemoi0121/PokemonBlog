@@ -11,6 +11,7 @@ import com.pokemon.blog.repository.CommentRepository;
 import com.pokemon.blog.repository.PostRepository;
 import com.pokemon.blog.service.CommentService;
 import com.pokemon.blog.util.SecurityUtils;
+import com.pokemon.blog.validator.CommentValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,12 @@ public class CommentServiceImpl implements CommentService {
         User currentUser = SecurityUtils.getCurrentUser();
         logger.info("User {} tạo comment trên post: {}", currentUser.getUserName(), postId);
 
+        // ✅ Business validation: content length
+        if (!CommentValidator.isContentValid(request.getContent())) {
+            logger.warn("Comment content không hợp lệ");
+            throw new IllegalArgumentException(CommentValidator.getErrorMessage());
+        }
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> {
                     logger.warn("Post không tìm thấy với id: {}", postId);
@@ -77,6 +84,12 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponse updateComment(Long commentId, CreateCommentRequest request) {
         User currentUser = SecurityUtils.getCurrentUser();
         logger.info("User {} cập nhật comment: {}", currentUser.getUserName(), commentId);
+
+        // ✅ Business validation: content length
+        if (!CommentValidator.isContentValid(request.getContent())) {
+            logger.warn("Comment content không hợp lệ");
+            throw new IllegalArgumentException(CommentValidator.getErrorMessage());
+        }
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> {

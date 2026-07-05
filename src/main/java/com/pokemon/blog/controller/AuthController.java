@@ -4,6 +4,7 @@ import com.pokemon.blog.entity.User;
 import com.pokemon.blog.dto.response.LoginResponse;
 import com.pokemon.blog.dto.request.LoginRequest;
 import com.pokemon.blog.auth.JwtTokenProvider;
+import com.pokemon.blog.exception.InvalidCredentialsException;
 import com.pokemon.blog.exception.ResourceNotFoundException;
 import com.pokemon.blog.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -32,7 +33,7 @@ public class AuthController {
                 ));
 
         if (!passwordEncoder.matches(loginRequest.getUserPassword(), user.getUserPassword())) {
-            throw new RuntimeException("Mật khẩu không đúng");
+            throw new InvalidCredentialsException("Mật khẩu không đúng");
         }
 
         String token = jwtTokenProvider.createToken(

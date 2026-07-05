@@ -10,6 +10,7 @@ import com.pokemon.blog.exception.UnauthorizedException;
 import com.pokemon.blog.repository.PokemonRepository;
 import com.pokemon.blog.service.PokemonService;
 import com.pokemon.blog.util.SecurityUtils;
+import com.pokemon.blog.validator.PokemonValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,9 +57,34 @@ public class PokemonServiceImpl implements PokemonService {
             throw new UnauthorizedException("Chỉ Admin mới có quyền thêm Pokemon");
         }
 
+        // ✅ Business validation: name format
+        if (!PokemonValidator.isNameValid(request.getName())) {
+            logger.warn("Pokemon name không hợp lệ: {}", request.getName());
+            throw new IllegalArgumentException(PokemonValidator.getNameErrorMessage());
+        }
+
+        // ✅ Business validation: type
+        if (!PokemonValidator.isTypeValid(request.getType())) {
+            logger.warn("Pokemon type không hợp lệ");
+            throw new IllegalArgumentException("Pokemon type không được trống");
+        }
+
+        // ✅ Business validation: duplicate name (case-insensitive)
         if (pokemonRepository.findByName(request.getName()).isPresent()) {
             logger.warn("Pokemon {} đã tồn tại", request.getName());
             throw new DuplicateResourceException("Pokemon " + request.getName() + " đã tồn tại");
+        }
+
+        // ✅ Business validation: stats validity
+        if (!PokemonValidator.areStatsValid(
+                request.getHp(),
+                request.getAttack(),
+                request.getDefense(),
+                request.getSpecialAttack(),
+                request.getSpecialDefense(),
+                request.getSpeed())) {
+            logger.warn("Pokemon stats không hợp lệ");
+            throw new IllegalArgumentException(PokemonValidator.getStatsErrorMessage());
         }
 
         Pokemon pokemon = new Pokemon();

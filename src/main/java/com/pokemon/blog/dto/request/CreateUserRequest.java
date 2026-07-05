@@ -1,21 +1,22 @@
 package com.pokemon.blog.dto.request;
 
+import com.pokemon.blog.config.AppConstants;
 import com.pokemon.blog.entity.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class CreateUserRequest {
 
-    @NotBlank(message = "Tên không được trống")
+    @NotBlank(message = AppConstants.VALIDATION_NAME_REQUIRED)
     private String name;
 
-    @NotBlank(message = "Username không được trống")
+    @NotBlank(message = AppConstants.VALIDATION_USERNAME_REQUIRED)
     private String userName;
 
-    @NotBlank(message = "Password không được trống")
+    @NotBlank(message = AppConstants.VALIDATION_PASSWORD_REQUIRED)
     private String userPassword;
 
-    @NotNull(message = "Role không được trống")
+    @NotNull(message = AppConstants.VALIDATION_ROLE_REQUIRED)
     private Role role;
 
     public CreateUserRequest() {}

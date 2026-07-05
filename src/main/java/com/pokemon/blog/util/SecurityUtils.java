@@ -3,6 +3,9 @@ package com.pokemon.blog.util;
 import com.pokemon.blog.entity.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+/**
+ * Utility class cho việc lấy thông tin security từ SecurityContextHolder.
+ */
 public class SecurityUtils {
 
     /**
@@ -46,9 +49,10 @@ public class SecurityUtils {
 
     /**
      * Kiểm tra xem user hiện tại có phải chủ của resource không.
+     * Người dùng chủ resource hoặc là admin sẽ trả về true.
      *
      * @param userId ID của user cần kiểm tra
-     * @return true nếu user hiện tại là chủ resource hoặc là ADMIN
+     * @return true nếu user hiện tại là chủ resource hoặc là ADMIN, false nếu không
      */
     public static boolean isOwnerOrAdmin(Long userId) {
         User currentUser = getCurrentUser();
