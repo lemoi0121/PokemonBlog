@@ -1,5 +1,6 @@
 package com.pokemon.blog.service.impl;
 
+import com.pokemon.blog.dto.response.PaginationResponse;
 import com.pokemon.blog.entity.Comment;
 import com.pokemon.blog.entity.Post;
 import com.pokemon.blog.entity.User;
@@ -15,6 +16,8 @@ import com.pokemon.blog.validator.CommentValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -30,21 +33,32 @@ public class CommentServiceImpl implements CommentService {
     private PostRepository postRepository;
 
     @Override
-    public List<CommentResponse> getCommentsByPost(Long postId) {
-        logger.info("Lấy comments của post: {}", postId);
+    public PaginationResponse<CommentResponse> getCommentsByPost(Long postId, Pageable pageable) {
+        logger.info("Lấy comments của post: {} (page={}, size={})",
+                postId, pageable.getPageNumber(), pageable.getPageSize());
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> {
                     logger.warn("Post không tìm thấy với id: {}", postId);
                     return new ResourceNotFoundException("Không tìm thấy Post với id " + postId);
                 });
 
-        List<CommentResponse> comments = commentRepository.findByPost(post)
+        Page<Comment> commentPage = commentRepository.findByPost(post, pageable);
+
+        List<CommentResponse> responses = commentPage.getContent()
                 .stream()
                 .map(CommentResponse::fromEntity)
                 .toList();
 
-        logger.debug("Post {} có {} comments", postId, comments.size());
-        return comments;
+        logger.debug("Post {} có {} comments", postId, commentPage.getTotalElements());
+
+        return new PaginationResponse<>(
+                responses,
+                commentPage.getNumber(),
+                commentPage.getSize(),
+                commentPage.getTotalElements(),
+                commentPage.getTotalPages()
+        );
     }
 
     @Override

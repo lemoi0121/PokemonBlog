@@ -1,17 +1,19 @@
 package com.pokemon.blog.service;
 
 import com.pokemon.blog.dto.response.PokemonResponse;
+import com.pokemon.blog.dto.response.PaginationResponse;
 import com.pokemon.blog.dto.request.CreatePokemonRequest;
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 public interface PokemonService {
 
     /**
-     * Lấy tất cả pokemons.
+     * Lấy tất cả pokemons (phân trang).
      *
-     * @return danh sách PokemonResponse
+     * @param pageable Spring Data Pageable object
+     * @return PaginationResponse chứa pokemons + metadata
      */
-    List<PokemonResponse> getAllPokemons();
+    PaginationResponse<PokemonResponse> getAllPokemons(Pageable pageable);
 
     /**
      * Lấy chi tiết một pokemon.

@@ -4,6 +4,7 @@ import com.pokemon.blog.entity.Post;
 import com.pokemon.blog.entity.User;
 import com.pokemon.blog.entity.Role;
 import com.pokemon.blog.dto.response.PostResponse;
+import com.pokemon.blog.dto.response.PaginationResponse;
 import com.pokemon.blog.dto.request.CreatePostRequest;
 import com.pokemon.blog.exception.ResourceNotFoundException;
 import com.pokemon.blog.exception.UnauthorizedException;
@@ -15,6 +16,8 @@ import com.pokemon.blog.validator.SearchValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -27,14 +30,27 @@ public class PostServiceImpl implements PostService {
     private PostRepository postRepository;
 
     @Override
-    public List<PostResponse> getAllPosts() {
-        logger.info("Lấy tất cả posts");
-        List<PostResponse> posts = postRepository.findAll()
+    public PaginationResponse<PostResponse> getAllPosts(Pageable pageable) {
+        logger.info("Lấy posts với pagination: page={}, size={}",
+                pageable.getPageNumber(), pageable.getPageSize());
+
+        Page<Post> postPage = postRepository.findAll(pageable);
+
+        List<PostResponse> responses = postPage.getContent()
                 .stream()
                 .map(PostResponse::fromEntity)
                 .toList();
-        logger.debug("Tổng số posts: {}", posts.size());
-        return posts;
+
+        logger.debug("Trả về {} posts từ tổng {} posts",
+                responses.size(), postPage.getTotalElements());
+
+        return new PaginationResponse<>(
+                responses,
+                postPage.getNumber(),           // currentPage
+                postPage.getSize(),             // pageSize
+                postPage.getTotalElements(),    // totalElements
+                postPage.getTotalPages()        // totalPages
+        );
     }
 
     @Override
@@ -147,8 +163,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostResponse> searchPosts(String keyword) {
-        logger.info("Tìm kiếm posts với keyword: {}", keyword);
+    public PaginationResponse<PostResponse> searchPosts(String keyword, Pageable pageable) {
+        logger.info("Tìm kiếm posts với keyword: {} (page={}, size={})",
+                keyword, pageable.getPageNumber(), pageable.getPageSize());
 
         // ✅ Business validation: keyword format
         if (!SearchValidator.isKeywordValid(keyword)) {
@@ -156,12 +173,22 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException(SearchValidator.getErrorMessage());
         }
 
-        List<PostResponse> results = postRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(keyword, keyword)
+        Page<Post> postPage = postRepository
+                .findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(keyword, keyword, pageable);
+
+        List<PostResponse> responses = postPage.getContent()
                 .stream()
                 .map(PostResponse::fromEntity)
                 .toList();
 
-        logger.info("Tìm thấy {} posts với keyword: {}", results.size(), keyword);
-        return results;
+        logger.info("Tìm thấy {} posts với keyword: {}", postPage.getTotalElements(), keyword);
+
+        return new PaginationResponse<>(
+                responses,
+                postPage.getNumber(),
+                postPage.getSize(),
+                postPage.getTotalElements(),
+                postPage.getTotalPages()
+        );
     }
 }

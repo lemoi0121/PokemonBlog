@@ -3,6 +3,7 @@ package com.pokemon.blog.service.impl;
 import com.pokemon.blog.entity.Pokemon;
 import com.pokemon.blog.entity.Role;
 import com.pokemon.blog.dto.response.PokemonResponse;
+import com.pokemon.blog.dto.response.PaginationResponse;
 import com.pokemon.blog.dto.request.CreatePokemonRequest;
 import com.pokemon.blog.exception.DuplicateResourceException;
 import com.pokemon.blog.exception.ResourceNotFoundException;
@@ -14,6 +15,8 @@ import com.pokemon.blog.validator.PokemonValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -26,14 +29,27 @@ public class PokemonServiceImpl implements PokemonService {
     private PokemonRepository pokemonRepository;
 
     @Override
-    public List<PokemonResponse> getAllPokemons() {
-        logger.info("Lấy tất cả pokemons");
-        List<PokemonResponse> pokemons = pokemonRepository.findAll()
+    public PaginationResponse<PokemonResponse> getAllPokemons(Pageable pageable) {
+        logger.info("Lấy pokemons với pagination: page={}, size={}",
+                pageable.getPageNumber(), pageable.getPageSize());
+
+        Page<Pokemon> pokemonPage = pokemonRepository.findAll(pageable);
+
+        List<PokemonResponse> responses = pokemonPage.getContent()
                 .stream()
                 .map(PokemonResponse::fromEntity)
                 .toList();
-        logger.debug("Tổng số pokemons: {}", pokemons.size());
-        return pokemons;
+
+        logger.debug("Trả về {} pokemons từ tổng {} pokemons",
+                responses.size(), pokemonPage.getTotalElements());
+
+        return new PaginationResponse<>(
+                responses,
+                pokemonPage.getNumber(),
+                pokemonPage.getSize(),
+                pokemonPage.getTotalElements(),
+                pokemonPage.getTotalPages()
+        );
     }
 
     @Override

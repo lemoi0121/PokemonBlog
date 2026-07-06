@@ -1,17 +1,19 @@
 package com.pokemon.blog.service;
 
 import com.pokemon.blog.dto.response.UserResponse;
+import com.pokemon.blog.dto.response.PaginationResponse;
 import com.pokemon.blog.dto.request.CreateUserRequest;
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
 
     /**
-     * Lấy tất cả users.
+     * Lấy tất cả users (phân trang).
      *
-     * @return danh sách UserResponse
+     * @param pageable Spring Data Pageable object
+     * @return PaginationResponse chứa users + metadata
      */
-    List<UserResponse> getAllUsers();
+    PaginationResponse<UserResponse> getAllUsers(Pageable pageable);
 
     /**
      * Lấy chi tiết một user.

@@ -15,9 +15,18 @@ public class SecurityUtils {
      * @throws ClassCastException nếu principal không phải User
      */
     public static User getCurrentUser() {
-        return (User) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
+        if (SecurityContextHolder.getContext().getAuthentication() == null ||
+                !SecurityContextHolder.getContext().getAuthentication().isAuthenticated() ||
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal().equals("anonymousUser")) {
+            throw new com.pokemon.blog.exception.UnauthorizedException("Bạn cần đăng nhập để thực hiện hành động này");
+        }
+        
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof User)) {
+            throw new com.pokemon.blog.exception.UnauthorizedException("Thông tin xác thực không hợp lệ");
+        }
+        
+        return (User) principal;
     }
 
     /**

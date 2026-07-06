@@ -48,6 +48,9 @@ public class AppConstants {
     public static final String CORS_ALLOWED_ORIGIN = "http://localhost:3000";
     public static final int CORS_MAX_AGE = 3600; // 1 hour
 
-    // ===== Database =====
+    // ===== Database & Pagination =====
     public static final int DEFAULT_PAGE_SIZE = 10;
+    public static final int MAX_PAGE_SIZE = 100;
+
+
 }

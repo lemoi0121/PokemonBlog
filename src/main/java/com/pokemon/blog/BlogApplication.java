@@ -38,6 +38,7 @@ public class BlogApplication {
 
 						// GET /users
 						.requestMatchers("GET", "/users").permitAll()
+						.requestMatchers("GET", "/users/**").permitAll()
 
 						// Auth endpoint
 						.requestMatchers("POST", "/auth/login").permitAll()

@@ -1,17 +1,20 @@
 package com.pokemon.blog.service;
 
 import com.pokemon.blog.dto.response.PostResponse;
+import com.pokemon.blog.dto.response.PaginationResponse;
 import com.pokemon.blog.dto.request.CreatePostRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface PostService {
 
     /**
-     * Lấy tất cả posts.
+     * Lấy tất cả posts (phân trang).
      *
-     * @return danh sách PostResponse
+     * @param pageable Spring Data Pageable object chứa page, size, sort
+     * @return PaginationResponse chứa posts + metadata phân trang
      */
-    List<PostResponse> getAllPosts();
+    PaginationResponse<PostResponse> getAllPosts(Pageable pageable);
 
     /**
      * Lấy chi tiết một post.
@@ -52,11 +55,12 @@ public interface PostService {
     void deletePost(Long id);
 
     /**
-     * Tìm kiếm posts theo keyword.
+     * Tìm kiếm posts theo keyword (phân trang).
      *
      * @param keyword từ khóa tìm kiếm (tìm trong title và content)
-     * @return danh sách PostResponse tìm thấy
-     * @throws IllegalArgumentException nếu keyword rỗng
+     * @param pageable Spring Data Pageable object
+     * @return PaginationResponse chứa posts tìm thấy
+     * @throws IllegalArgumentException nếu keyword không hợp lệ
      */
-    List<PostResponse> searchPosts(String keyword);
+    PaginationResponse<PostResponse> searchPosts(String keyword, Pageable pageable);
 }

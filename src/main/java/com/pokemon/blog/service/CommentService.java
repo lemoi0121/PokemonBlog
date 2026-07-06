@@ -1,19 +1,21 @@
 package com.pokemon.blog.service;
 
 import com.pokemon.blog.dto.response.CommentResponse;
+import com.pokemon.blog.dto.response.PaginationResponse;
 import com.pokemon.blog.dto.request.CreateCommentRequest;
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 public interface CommentService {
 
     /**
-     * Lấy tất cả comments của một post.
+     * Lấy tất cả comments của một post (phân trang).
      *
      * @param postId ID của post
-     * @return danh sách CommentResponse
+     * @param pageable Spring Data Pageable object
+     * @return PaginationResponse chứa comments + metadata
      * @throws com.pokemon.blog.exception.ResourceNotFoundException nếu post không tồn tại
      */
-    List<CommentResponse> getCommentsByPost(Long postId);
+    PaginationResponse<CommentResponse> getCommentsByPost(Long postId, Pageable pageable);
 
     /**
      * Tạo comment mới trên post.

@@ -2,6 +2,7 @@ package com.pokemon.blog.service.impl;
 
 import com.pokemon.blog.entity.User;
 import com.pokemon.blog.dto.response.UserResponse;
+import com.pokemon.blog.dto.response.PaginationResponse;
 import com.pokemon.blog.dto.request.CreateUserRequest;
 import com.pokemon.blog.exception.DuplicateResourceException;
 import com.pokemon.blog.exception.ResourceNotFoundException;
@@ -11,6 +12,8 @@ import com.pokemon.blog.validator.UsernameValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -27,14 +30,27 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public List<UserResponse> getAllUsers() {
-        logger.info("Lấy tất cả users");
-        List<UserResponse> users = userRepository.findAll()
+    public PaginationResponse<UserResponse> getAllUsers(Pageable pageable) {
+        logger.info("Lấy users với pagination: page={}, size={}",
+                pageable.getPageNumber(), pageable.getPageSize());
+
+        Page<User> userPage = userRepository.findAll(pageable);
+
+        List<UserResponse> responses = userPage.getContent()
                 .stream()
                 .map(UserResponse::fromEntity)
                 .toList();
-        logger.debug("Tổng số users: {}", users.size());
-        return users;
+
+        logger.debug("Trả về {} users từ tổng {} users",
+                responses.size(), userPage.getTotalElements());
+
+        return new PaginationResponse<>(
+                responses,
+                userPage.getNumber(),
+                userPage.getSize(),
+                userPage.getTotalElements(),
+                userPage.getTotalPages()
+        );
     }
 
     @Override
